@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NEST3.0 automatic eat single arbitrage program</title>
+    <style>
+        .line{
+            border-bottom: 0.5px dotted white;
+        }
+    </style>
+</head>
+<body class="bk">
+<div style="text-align: center">
+    <h2>NEST3.0 automatic eat single arbitrage program</h2>
+    <div style="text-align: left;display: inline-block;">
+        <label th:text=${startEat}></label>  <button onclick="startEat()">Modify the state</button>
+        <p class="line"></p>
+        <p></p>
+        <label>The current node: </label><label th:text=${node}></label>
+        <p></p>
+        <label>Current ERC20 token address: </label><label th:text=${erc20Addr}></label>
+        <p></p>
+        <label>Name of the current transaction pair: </label><label th:text=${symbols}></label>
+        <p></p>
+        <label>Current order deviation value: </label><label th:text=${eatRate}></label>
+        <p class="line"></p>
+        <label>The wallet address: </label><label th:text=${address}></label>
+        <p class="line"></p>
+        <p></p>
+        <label>Huocoin EXCHANGE API-KEY: </label><label th:text=${apiKey}></label>
+        <p></p>
+        <label>Huocoin EXCHANGE API-SECRET: </label><label th:text=${apiSecret}></label>
+        <p></p>
+        <div th:if="${proxyPort>0}">
+            <p></p>
+            <label>Proxy ip: </label><label th:text=${proxyIp}></label>
+            <p></p>
+            <label>Proxy port: </label><label th:text=${proxyPort}></label>
+            <p></p>
+        </div>
+        <p class="line"></p>
+        <label>Setting up ethereum nodes (required): </label>
+        <form id="updateNode">
+            <input type="text" name="node" id="node" autocomplete="off">
+            <input type="button" onclick="updateNode()" value="submit"/>
+        </form>
+
+        <label>Set ERC20 address and firecoin trading pair (required): </label>
+        <form id="updateErc20">
+            <input type="text" name="erc20Addr" id="erc20Addr" autocomplete="off" placeholder="ERC20 address">
+            <input type="text" name="symbols" id="symbols" autocomplete="off" placeholder="Such as：ethusdt    ">
+            <input type="button" onclick="updateErc20()" value="submit"/>
+        </form>
+
+        <label>Set the network agent address and port (not required): </label>
+        <form id="updateProxy">
+            <input type="text" name="proxyIp" id="proxyIp" autocomplete="off" placeholder="Proxy IP, default is 127.0.0.1">
+            <input type="text" name="proxyPort" id="proxyPort" autocomplete="off" placeholder="Proxy port">
+            <input type="button" onclick="updateProxy()" value="submit"/>
+        </form>
+        <p class="line"></p>
+        <label>Set the order eating ratio (if there is a deviation from the huo coin trading price beyond this value, fill the order as a decimal, such as 2%, fill 0.02, non-required, default 2%): </label>
+        <form id="updateEatRate">
+            <input type="text" name="eatRate" autocomplete="off">
+            <input type="button" onclick="updateEatRate()" value="submit"/>
+        </form>
+        <p class="line"></p>
+        <form id="updateExchangeApiKey">
+            <label>Enter fire coin API-KEY (not required)</label>
+            <p></p>
+            <input type="text" name="apiKey" autocomplete="off">
+            <p></p>
+            <label>Enter fire coin API-SECRET (not required)</label>
+            <p></p>
+            <input type="text" name="apiSecret" autocomplete="off">
+            <p></p>
+            <input type="button" onclick="updateExchangeApiKey()" value="submit"/>
+        </form>
+        <label th:text=${huobiExchangeState}></label>  <button onclick="huobiExchangeState()">Modify the state</button>
+        <p></p>
+
+        <label th:text=${authorizedUser}></label>  <button onclick="updateAuthorizedUser()">Modify the state</button>
+
+        <p class="line"></p>
+        <label>Set private key (required): </label>
+        <form id="updatePrivateKey">
+            <input type="text" name="privateKey" id="privateKey" autocomplete="off">
+            <input type="button" onclick="updatePrivateKey()" value="submit"/>
+        </form>
+
+    </div>
+</div>
+</body>
+
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript">
+
+    function updateProxy(){
+        var proxyPort = document.getElementById("proxyPort").value;
+        if (!proxyPort){
+            alert("The proxy port cannot be empty")
+            return false;
+        }
+
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateProxy",
+            data:$('#updateProxy').serialize(),
+            success:function(result){
+                location.reload();
+            },
+            error:function(){
+                alert("Please enter the correct agent port and address!!")
+            }
+        })
+    }
+
+    function updateEatRate(){
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateEatRate",
+            data:$('#updateEatRate').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Please enter the correct address and transaction pair!!")
+            }
+        })
+    }
+
+    function updateErc20(){
+        var symbols = document.getElementById("symbols").value;
+        var erc20Addr = document.getElementById("erc20Addr").value;
+        if (!erc20Addr){
+            alert("The ERC20 address cannot be empty")
+            return false;
+        }
+        if (!symbols){
+            alert("Firecoin trading pair cannot be empty")
+            return false;
+        }
+
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateErc20",
+            data:$('#updateErc20').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Please enter the correct address and transaction pair!!")
+            }
+        })
+    }
+
+    function updateNode(){
+        var node = document.getElementById("node").value;
+        if (!node){
+            alert("The node cannot be empty")
+            return false;
+        }
+
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateNode",
+            data:$('#updateNode').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Please enter the correct node address!!")
+            }
+        })
+    }
+
+    function updateExchangeApiKey(){
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateExchangeApiKey",
+            data:$('#updateExchangeApiKey').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Please enter the correct API-Key !!")
+            }
+        })
+    }
+
+    function huobiExchangeState() {
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateHuobiExchangeState",
+            data:$('').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Exchange start/close error!!")
+            }
+        })
+    }
+
+    function updateAuthorizedUser() {
+        $.ajax({
+            type:"POST",
+            url:"/eat/updateAuthorizedUser",
+            data:$('').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Exchange certification correction error!!")
+            }
+        })
+    }
+
+    var node='[[${node}]]';
+    var symbols='[[${symbols}]]';
+    var erc20Addr='[[${erc20Addr}]]';
+    function updatePrivateKey(){
+        var privateKey = document.getElementById("privateKey").value;
+        if (!privateKey){
+            alert("The private key cannot be empty")
+            return false;
+        }
+
+        if(!node){
+            alert("Please set the node first");
+            return false;
+        }
+        if(!symbols){
+            alert("Please set up the firecoin trading pair first");
+            return false;
+        }
+        if(!erc20Addr){
+            alert("Please set the ERC20 token address first");
+            return false;
+        }
+
+        $.ajax({
+            type:"POST",
+            url:"/eat/updatePrivateKey",
+            data:$('#updatePrivateKey').serialize(),
+            success:function(result){
+                alert("Initialization is complete and you can now open the arbitrage play")
+                location.reload();
+            },
+            error:function(){
+                alert("Please enter the correct private key!!")
+            }
+        })
+    }
+
+    var address='[[${address}]]';
+    function startEat(){
+        if(address=='Please fill in the correct private key first'){
+            alert("Please fill in the correct private key first");
+            return false;
+        }
+        $.ajax({
+            type:"POST",
+            url:"/eat/startEat",
+            data:$('').serialize(),
+            success:function(result){
+                location.replace(location);
+            },
+            error:function(){
+                alert("Error starting/closing!!")
+            }
+        })
+    }
+</script>
+
+<style type="text/css">
+    .bk{
+        background-color: cadetblue;
+        background-size: 100% 100%;
+    }
+</style>
+</html>
+

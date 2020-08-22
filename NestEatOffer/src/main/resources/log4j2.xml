@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="warn">
+
+    <appenders>
+        <console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%p] - %l - %m%n"/>
+        </console>
+
+		<RollingFile name="RollingFileDebug" fileName="/home/eatlog/debug.log"
+                     filePattern="/home/eatlog/debug-%d{yyyy-MM-dd}-%i.log">
+            <Filters>
+                <ThresholdFilter level="DEBUG"/>
+                <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="RollingFileInfo" fileName="/home/eatlog/info.log"
+                     filePattern="/home/eatlog/info-%d{yyyy-MM-dd}-%i.log">
+            <Filters>
+                <ThresholdFilter level="INFO"/>
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="RollingFileWarn" fileName="/home/eatlog/warn.log"
+                     filePattern="/home/eatlog/warn-%d{yyyy-MM-dd}-%i.log">
+            <Filters>
+                <ThresholdFilter level="WARN"/>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="RollingFileError" fileName="/home/eatlog/error.log"
+                     filePattern="/home/eatlog/error-%d{yyyy-MM-dd}-%i.log">
+            <ThresholdFilter level="ERROR"/>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+    </appenders>
+
+    <loggers>
+        <logger name="org.springframework" level="INFO">
+        </logger>
+        <logger name="org.hibernate" level="INFO">
+        </logger>
+        <root level="info">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="RollingFileInfo"/>
+            <appender-ref ref="RollingFileWarn"/>
+            <appender-ref ref="RollingFileError"/>
+        </root>
+    </loggers>
+
+</configuration>
