@@ -69,6 +69,21 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
     // Whether the exchange has authenticated users
     private volatile String AUTHORIZED_USER = "true";
 
+    /**
+     * quotation fee
+     */
+    public static BigInteger SERVICE_CHARGE = null;
+
+    /**
+     * The number of ETH required to eat a single quote (WEI)
+     */
+    public static BigInteger ONE_ETH_AMOUNT = null;
+
+    /**
+     * The number of ETH required to eat a single quote (ETH)
+     */
+    public static BigInteger ONE_ETH_AMOUNT2 = null;
+
     private volatile String API_KEY = "";
     private volatile String API_SECRET = "";
 
@@ -172,7 +187,7 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
                 BigInteger copies = null;
                 // You can eat them all
                 if (canEatAll) {
-                    copies = dealEthAmount.divide(Constant.ONE_ETH_AMOUNT);
+                    copies = dealEthAmount.divide(ONE_ETH_AMOUNT);
                 } else {// You can't eat them all
                     // Serving number: 10ETH per serving
                     copies = getCopies(eatEth, exchangePrice, ethBalance, erc20Balance, eatPrice, multiple);
@@ -205,16 +220,16 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
     private String sendEatOffer(BigDecimal exchangePrice, BigDecimal eatPrice, BigInteger multiple,
                                 boolean eatEth, BigInteger copies, String contractAddress, BigInteger gasPrice) {
         // Trade: the ETH
-        BigInteger tranEthAmout = copies.multiply(Constant.ONE_ETH_AMOUNT);
+        BigInteger tranEthAmout = copies.multiply(ONE_ETH_AMOUNT);
         // Trade: ERC20
-        BigInteger tranErc20Amount = MathUtils.toBigInt(MathUtils.decMulInt(eatPrice, copies.multiply(BigInteger.TEN)).multiply(MathUtils.toDecimal(DECIMAL)));
+        BigInteger tranErc20Amount = MathUtils.toBigInt(MathUtils.decMulInt(eatPrice, copies.multiply(ONE_ETH_AMOUNT2)).multiply(MathUtils.toDecimal(DECIMAL)));
         // Quote: the ETH
         BigInteger offerEthAmount = tranEthAmout.multiply(multiple);
         // Quote: erc20
         BigInteger eth = MathUtils.toBigInt(MathUtils.toDecimal(offerEthAmount).divide(Constant.UNIT_ETH, 0, BigDecimal.ROUND_DOWN));
         BigInteger offerErc20Amount = MathUtils.toBigInt(MathUtils.decMulInt(exchangePrice, eth).multiply(MathUtils.toDecimal(DECIMAL)));
         // The service fee
-        BigInteger serviceCharge = Constant.SERVICE_CHARGE.multiply(copies);
+        BigInteger serviceCharge = SERVICE_CHARGE.multiply(copies);
         // ETH charges: quotation, menu, service charge
         BigInteger payEthAmount = null;
 
@@ -778,11 +793,11 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
      */
     private BigInteger getCopies(boolean eatEth, BigDecimal exchangePrice, BigInteger ethBalance, BigInteger erc20Balance, BigDecimal eatPrice, BigInteger multiple) {
         // Quoted ETH quantity
-        BigInteger offerEth = multiple.multiply(Constant.ONE_ETH_AMOUNT);
+        BigInteger offerEth = multiple.multiply(ONE_ETH_AMOUNT);
         // Take a portion, ETH needed
         BigInteger eatOneEth = null;
 
-        BigInteger ethCount = multiple.multiply(BigInteger.TEN);// Number of ETH
+        BigInteger ethCount = multiple.multiply(ONE_ETH_AMOUNT2);// Number of ETH
         BigInteger offerErc20 = MathUtils.toBigInt(MathUtils.decMulInt(exchangePrice, ethCount)).multiply(DECIMAL); // Offer
         BigInteger eatErc20 = MathUtils.toBigInt(MathUtils.decMulInt(eatPrice, ethCount)).multiply(DECIMAL); // Eat
         // Take a portion, ERC20 needed
@@ -790,15 +805,15 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
 
         // Eat the ETH
         if (eatEth) {
-            eatOneEth = offerEth.subtract(Constant.ONE_ETH_AMOUNT);
+            eatOneEth = offerEth.subtract(ONE_ETH_AMOUNT);
             eatOneErc20 = offerErc20.add(eatErc20);
         } else { // Eat the ERC20
-            eatOneEth = offerEth.add(Constant.ONE_ETH_AMOUNT);
+            eatOneEth = offerEth.add(ONE_ETH_AMOUNT);
             eatOneErc20 = offerErc20.subtract(eatErc20);
         }
 
         // ETH balance can eat a single portion
-        BigInteger balance = ethBalance.subtract(Constant.PACKAGING_COSTS).subtract(Constant.SERVICE_CHARGE);
+        BigInteger balance = ethBalance.subtract(Constant.PACKAGING_COSTS).subtract(SERVICE_CHARGE);
         BigInteger copiesEth = MathUtils.toBigInt(MathUtils.intDivInt(balance, eatOneEth, 0));
         // The balance of ERC20 can be eaten as a single serving
         BigInteger copiesErc20 = MathUtils.toBigInt(MathUtils.intDivInt(erc20Balance, eatOneErc20, 0));
@@ -835,12 +850,12 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
         // Eat the ETH
         if (eatEth) {
             // Eat all the minimum NUMBER of ETH: quote number + eating order handling fee + miners packing fee - eating order to get the ETH
-            minEthAmount = ethAmount.add(Constant.SERVICE_CHARGE).add(Constant.PACKAGING_COSTS).subtract(dealEthAmount);
+            minEthAmount = ethAmount.add(SERVICE_CHARGE).add(Constant.PACKAGING_COSTS).subtract(dealEthAmount);
             // Eat all minimum REQUIRED ERC20 quantity: quote ERC20+ eat order required ERC20
             minErc20Amount = erc20Amount.add(dealErc20Amount);
         } else {// Eat ERC20
             // Eat all the minimum NUMBER of ETH: quoted number + eating order handling fee + miners packing fee + eating order required number of ETH
-            minEthAmount = ethAmount.add(Constant.SERVICE_CHARGE).add(Constant.PACKAGING_COSTS).add(dealEthAmount);
+            minEthAmount = ethAmount.add(SERVICE_CHARGE).add(Constant.PACKAGING_COSTS).add(dealEthAmount);
             // Eat all minimum ERC20 quantity required: ETH* exchange price - the amount of ERC20 obtained by eating order
             minErc20Amount = erc20Amount.subtract(dealErc20Amount);
         }

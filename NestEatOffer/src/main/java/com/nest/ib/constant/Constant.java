@@ -25,11 +25,6 @@ public interface Constant {
     BigInteger DEFAULT_BLOCK_LIMIT = new BigInteger("25");
 
     /**
-     * The number of ETH required to eat a single quote (WEI)
-     */
-    BigInteger ONE_ETH_AMOUNT = new BigInteger("10000000000000000000");
-
-    /**
      * Default miner packing fee
      */
     BigInteger PACKAGING_COSTS = new BigInteger("200000000000000000");
@@ -49,10 +44,6 @@ public interface Constant {
      */
     BigDecimal UNIT_ETH = new BigDecimal("1000000000000000000");
 
-    /**
-     * Total amount of 10ETH quotation fee
-     */
-    BigInteger SERVICE_CHARGE = new BigInteger("10000000000000000");
 
     /**
      * If the price offset exceeds 10%, the minimum quotation amount should be multiplied by 10

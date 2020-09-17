@@ -98,6 +98,9 @@ public class EthClient {
         nestOfferPriceContract = ContractFactory.nestOfferPriceContract(credentials, web3j);
         nest3OfferMain = ContractFactory.nest3OfferMain(credentials, web3j);
 
+        // Initializes the least eth
+        if (!initLeastEth()) return;
+
         // Get ERC20 token information
         getErc20Info();
 
@@ -111,6 +114,31 @@ public class EthClient {
             LOG.error("ERC20 authorization for the quoted factory contract failed:{}", e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private boolean initLeastEth() {
+        // Base quotation scale
+        BigInteger leastEth = null;
+        // Eating bill poundage ratio
+        BigInteger tranEth = null;
+        try {
+            leastEth = nest3OfferMain.checkleastEth().send();
+            tranEth = nest3OfferMain.checkTranEth().send();
+        } catch (Exception e) {
+            LOG.error("Failed to obtain leastEth or tranEth,  please restart：{}", e.getMessage());
+            return false;
+        }
+
+        if (leastEth == null || tranEth == null) return false;
+
+        EatOfferAndTransactionServiceImpl.ONE_ETH_AMOUNT = leastEth;
+
+        EatOfferAndTransactionServiceImpl.SERVICE_CHARGE = leastEth.multiply(tranEth).divide(BigInteger.valueOf(1000L));
+
+        EatOfferAndTransactionServiceImpl.ONE_ETH_AMOUNT2 = leastEth.divide(MathUtils.toBigInt(Constant.UNIT_ETH));
+
+        LOG.info("The leastEth obtains the success：{} ETH", EatOfferAndTransactionServiceImpl.ONE_ETH_AMOUNT2);
+        return true;
     }
 
     /**
