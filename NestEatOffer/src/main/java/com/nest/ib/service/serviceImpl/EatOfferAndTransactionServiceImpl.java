@@ -1091,7 +1091,7 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
         // Buy ETH, sell ERC20
         if (buyTokenName.equalsIgnoreCase("ETH")) {
             if (SYMBOLS.endsWith("eth")) {
-                orderId = sendSellMarketOrder(SYMBOLS, String.valueOf(rightTokenAmount.divide(Constant.UNIT_ETH, 2, BigDecimal.ROUND_DOWN)));
+                orderId = sendSellMarketOrder(SYMBOLS, String.valueOf(rightTokenAmount.divide(MathUtils.toDecimal(DECIMAL), 2, BigDecimal.ROUND_DOWN)));
             } else {
                 orderId = sendBuyMarketOrder(SYMBOLS, String.valueOf(rightTokenAmount.divide(MathUtils.toDecimal(DECIMAL), 2, BigDecimal.ROUND_DOWN)));
             }
