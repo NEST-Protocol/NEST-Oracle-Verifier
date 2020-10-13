@@ -132,6 +132,14 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
             e.printStackTrace();
         }
 
+        BigInteger nonce = null;
+        try {
+            nonce = ethClient.ethGetTransactionCount();
+        } catch (IOException e) {
+            LOG.error("Failed to get a nonce", e.getMessage());
+            return;
+        }
+
         try {
             // Traverse these contracts to find those whose prices exceed the specified offset percentage
             for (OfferThreeData offerThreeData : offerThreeDatas) {
@@ -197,8 +205,10 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
                     }
                 }
 
-                String hash = sendEatOffer(exchangePrice, eatPrice, multiple, eatEth, copies, contractAddress, gasPrice);
-                Thread.sleep(1000 * 2);
+                String hash = sendEatOffer(exchangePrice, eatPrice, multiple, eatEth, copies, contractAddress, gasPrice,nonce);
+
+                nonce = nonce.add(BigInteger.ONE);
+                Thread.sleep(1000);
             }
         } catch (Exception e) {
             LOG.error("Eating order abnormal：{}", e.getMessage());
@@ -218,7 +228,7 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
      * @param gasPrice
      */
     private String sendEatOffer(BigDecimal exchangePrice, BigDecimal eatPrice, BigInteger multiple,
-                                boolean eatEth, BigInteger copies, String contractAddress, BigInteger gasPrice) {
+                                boolean eatEth, BigInteger copies, String contractAddress, BigInteger gasPrice,BigInteger nonce) {
         // Trade: the ETH
         BigInteger tranEthAmout = copies.multiply(ONE_ETH_AMOUNT);
         // Trade: ERC20
@@ -266,7 +276,7 @@ public class EatOfferAndTransactionServiceImpl implements EatOfferAndTransaction
                 tranEthAmout, SYMBOL, tranErc20Amount, offerEthAmount, SYMBOL, offerErc20Amount, payEthAmount);
 
         // Initiate an order offer transaction
-        String transactionHash = ethClient.sendEatOffer(typeList, payEthAmount, method, gasPrice);
+        String transactionHash = ethClient.sendEatOffer(typeList, payEthAmount, method, gasPrice,nonce);
 
         // Keep order buying and selling, then trade on an exchange
         if (!StringUtils.isEmpty(transactionHash)) {

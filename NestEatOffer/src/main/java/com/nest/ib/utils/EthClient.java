@@ -330,17 +330,9 @@ public class EthClient {
      * @param gasPrice
      * @return
      */
-    public String sendEatOffer(List typeList, BigInteger payableEth, String method, BigInteger gasPrice) {
+    public String sendEatOffer(List typeList, BigInteger payableEth, String method, BigInteger gasPrice,BigInteger nonce) {
         Function function = new Function(method, typeList, Collections.<TypeReference<?>>emptyList());
         String encode = FunctionEncoder.encode(function);
-
-        BigInteger nonce = null;
-        try {
-            nonce = ethGetTransactionCount();
-        } catch (IOException e) {
-            LOG.error("Failure to obtain gasPrice by eating order", e.getMessage());
-            e.printStackTrace();
-        }
 
         String transaction = null;
         try {
